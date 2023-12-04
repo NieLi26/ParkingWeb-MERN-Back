@@ -1,10 +1,15 @@
-import { request, response } from "express";
+import { query, request, response } from "express";
 import { Reserva, Lote, Tarifa, Pago } from "../models/index.js";
+import { calcularPrecio, calcularTiempo } from "../helpers/index.js";
 
 const obtenerReservas = async ( req, res = response ) => {
-
     try {
         const reservas = await Reserva.find({ estado: true })
+            .populate([
+                { path: 'lote', select: '-estado -__v'},
+                { path: 'tarifa', select: '-estado -__v'}
+            ])
+
         res.json(reservas)
     } catch (error) {
         console.log(error);
@@ -79,10 +84,12 @@ const crearReserva = async ( req, res = response ) => {
         data.patente = patente;
         const reserva = new Reserva(data);
         await reserva.save()
-        
+
         // Modificar estado de lote
         existeLote.condicion = 'Ocupado';
-        existeLote.save();
+        await existeLote.save();
+
+        reserva.lote = existeLote
 
         res.status(201).json(reserva);
 
@@ -215,17 +222,24 @@ const cambiarCondicion = async ( req, res = response ) => {
             })
         }
 
-        if ( existeReserva.condicion !== 'Iniciada' ) {
+        const codicionesValidas = ['Finalizada', 'Anulada']
+
+        if ( !codicionesValidas.includes(condicion) ) {
+            const error = new Error('Condicion no Valida')
+            return res.status(400).json({
+                msg: error.message
+            })
+        }
+
+        if ( condicion === 'Finalizada' && existeReserva.condicion !== 'Iniciada' ) {
             const error = new Error('La reserva debe estar Iniciada')
             return res.status(400).json({
                 msg: error.message
             })
         }
 
-        const codicionesValidas = ['Finalizada', 'Anulada']
-
-        if ( !codicionesValidas.includes(condicion) ) {
-            const error = new Error('Condicion no Valida')
+        if ( condicion === 'Anulada'  && existeReserva.condicion !== 'Finalizada' ) {
+            const error = new Error('La reserva debe estar Finalizada')
             return res.status(400).json({
                 msg: error.message
             })
@@ -243,8 +257,8 @@ const cambiarCondicion = async ( req, res = response ) => {
         existeReserva.condicion = condicion;
         await existeReserva.save();
         // Liberar Lote
-        await Lote.findByIdAndUpdate(existeReserva.lote, { condicion: 'Disponible' })
-
+        const lote = await Lote.findByIdAndUpdate(existeReserva.lote, { condicion: 'Disponible' }, { new: true })
+        existeReserva.lote = lote;
         res.json(existeReserva);
 
     } catch (error) {
@@ -256,6 +270,48 @@ const cambiarCondicion = async ( req, res = response ) => {
     }
 }
 
+const buscarReservaPatente = async ( req, res = response ) => {
+    const { q = '', limite = '', orden = '' } = req.query;
+    console.log(q, limite, orden);
+    try {
+        const regex = new RegExp(q, 'i');
+        const reservas = await Reserva.find({ patente: regex, condicion: 'Finalizada', estado: true })
+            .populate([
+                { path: 'lote', select: '-estado -__v'},
+                { path: 'tarifa', select: '-estado -__v'}
+            ])
+            .select('-__v -estado')
+            .sort({ createdAt: orden === 'desc' ? -1 : 1 })
+            .limit(limite ? limite : '')
+
+        const reservaMasPrecio = reservas.map( reserva => (
+            {
+                ...reserva.toObject(),
+                tiempoTotal: calcularTiempo(reserva.entrada, reserva.salida),
+                precioTotal: calcularPrecio(
+                    reserva.entrada, reserva.salida, reserva.tarifa.precioBase,
+                    reserva.tarifa.precioMinuto, reserva.tarifa.desdeMinuto
+                )
+            }
+        ))
+
+        // if ( condicion ) {
+        //     const condicionesValidas = ['Iniciada', 'Finalizada', 'Pagada', 'Anulada']
+        //     if (!condicionesValidas.includes(condicion)) {
+        //         const error = new Error('Condicion no Valida')
+        //         return res.status(400).json({
+        //             msg: error.message
+        //         })
+        //     }
+        // reservas = await reservas.find({ condicion: condicion })
+        res.json(reservaMasPrecio)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
 
 export {
     obtenerReservas,
@@ -263,5 +319,6 @@ export {
     crearReserva,
     actualizarReserva,
     eliminarReserva,
-    cambiarCondicion
+    cambiarCondicion,
+    buscarReservaPatente
 }

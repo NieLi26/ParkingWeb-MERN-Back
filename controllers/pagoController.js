@@ -1,6 +1,7 @@
 import { request, response } from "express";
 import { Pago, Reserva } from "../models/index.js";
 import generarNumeroUnico from "../helpers/generarNumeroUnico.js";
+import { calcularPrecio } from "../helpers/index.js";
 
 const obtenerPagos = async ( req = request, res = response ) => {
 
@@ -67,7 +68,11 @@ const crearPago = async ( req, res = response ) => {
 
         const { estado, ...data } = req.body;
         data.numero = generarNumeroUnico(6);
-        data.total = 1000;
+        const total = calcularPrecio(
+            existeReserva.entrada, existeReserva.salida, existeReserva.tarifa.precioBase,
+            existeReserva.tarifa.precioMinuto, existeReserva.tarifa.desdeMinuto
+        )
+        data.total = total;
         const pago = new Pago(data);
         await pago.save()
 
@@ -84,7 +89,6 @@ const crearPago = async ( req, res = response ) => {
         }) 
     }
 }
-
 
 const actualizarPago = async ( req, res = response ) => {
     const { id } = req.params;

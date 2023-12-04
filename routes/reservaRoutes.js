@@ -6,7 +6,8 @@ import {
     crearReserva, 
     actualizarReserva, 
     eliminarReserva,
-    cambiarCondicion
+    cambiarCondicion,
+    buscarReservaPatente
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeReservaPorId } from "../helpers/index.js";
@@ -42,6 +43,7 @@ router.delete('/:id', [
     check('id').custom( existeReservaPorId ),
     validarCampos
 ], eliminarReserva)
+router.get('/buscar/patente', buscarReservaPatente)
 
 
 export default router;

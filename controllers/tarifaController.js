@@ -3,8 +3,47 @@ import { Tarifa } from "../models/index.js";
 
 const obtenerTarifas = async ( req, res = response ) => {
 
+    const { page, pageSize = 5 } = req.query;
+    const query = { estado: true };
     try {
-        const tarifas = await Tarifa.find({ estado: true })
+        if ( page ) {
+            const totalResults = await Tarifa.countDocuments(query);
+
+            const totalPages = Math.ceil(totalResults / pageSize);
+
+            let adjustedPage = parseInt(page);
+            if (adjustedPage > totalPages) {
+                // Si la página solicitada es mayor que el total de páginas, ajustarla al último
+                adjustedPage = totalPages;
+            }
+
+            const startIndex = (adjustedPage  - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize - 1, totalResults - 1);
+        
+            const tarifas = await Tarifa.find(query)
+                .sort('nombre')
+                .skip(startIndex)
+                .limit(parseInt(pageSize));
+        
+        
+            const paginationInfo = {
+                number: adjustedPage,
+                total_pages: totalPages,
+                has_previous: adjustedPage > 1,
+                has_next: adjustedPage < totalPages,
+                paginate_by: parseInt(pageSize),
+                total_results: totalResults,
+                start_index: startIndex + 1,
+                end_index: endIndex + 1,
+            };
+        
+            return res.json({
+                tarifas,
+                pagination: paginationInfo,
+            });
+        } 
+
+        const tarifas = await Tarifa.find(query)
         res.json(tarifas)
     } catch (error) {
         console.log(error);
