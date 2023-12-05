@@ -3,8 +3,52 @@ import { Reserva, Lote, Tarifa, Pago } from "../models/index.js";
 import { calcularPrecio, calcularTiempo } from "../helpers/index.js";
 
 const obtenerReservas = async ( req, res = response ) => {
+    const { page, pageSize = 5 } = req.query;
+    const query = { estado: true };
+    
     try {
-        const reservas = await Reserva.find({ estado: true })
+        if ( page ) {
+            const totalResults = await Reserva.countDocuments(query);
+
+            const totalPages = Math.ceil(totalResults / pageSize);
+
+            let adjustedPage = parseInt(page);
+            if (adjustedPage > totalPages) {
+                // Si la página solicitada es mayor que el total de páginas, ajustarla al último
+                adjustedPage = totalPages;
+            }
+
+            const startIndex = (adjustedPage  - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize - 1, totalResults - 1);
+        
+            const reservas = await Reserva.find(query)
+                .sort('patente')
+                .skip(startIndex)
+                .limit(parseInt(pageSize))
+                .populate([
+                    { path: 'lote', select: '-estado -__v'},
+                    { path: 'tarifa', select: '-estado -__v'}
+                ])
+        
+        
+            const paginationInfo = {
+                number: adjustedPage,
+                total_pages: totalPages,
+                has_previous: adjustedPage > 1,
+                has_next: adjustedPage < totalPages,
+                paginate_by: parseInt(pageSize),
+                total_results: totalResults,
+                start_index: startIndex + 1,
+                end_index: endIndex + 1,
+            };
+        
+            return res.json({
+                reservas,
+                pagination: paginationInfo,
+            });
+        } 
+
+        const reservas = await Reserva.find(query)
             .populate([
                 { path: 'lote', select: '-estado -__v'},
                 { path: 'tarifa', select: '-estado -__v'}
