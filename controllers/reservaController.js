@@ -104,6 +104,7 @@ const crearReserva = async ( req, res = response ) => {
                 msg: error.message
             });
         };
+
         // Validar Tarifa
         const existeTarifa = await Tarifa.findById(tarifa);
         if ( !existeTarifa ) {
@@ -116,7 +117,13 @@ const crearReserva = async ( req, res = response ) => {
         // Validar Licencia
         // TODO: patente deberia usar una expresion regular para evitar el uso o no de signos especiales(guiones, especios, etc)
         patente = patente.toUpperCase();
-        const existePatenteEnUso = await Reserva.findOne({ patente });
+        const existePatenteEnUso = await Reserva.findOne({
+            patente,
+            $or: [
+              { condicion: 'Finalizada' },
+              { condicion: 'Iniciada' }
+            ]
+          });
         if ( existePatenteEnUso ) {
             const error = new Error(`La Patente ${patente}, esta en uso`);
             return res.status(403).json({

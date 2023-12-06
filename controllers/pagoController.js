@@ -82,7 +82,10 @@ const crearPago = async ( req, res = response ) => {
     const { reserva, metodoPago } = req.body;
 
     try {
-        const existeReserva = await Reserva.findById( reserva );
+        const existeReserva = await Reserva.findById( reserva )
+        .populate('tarifa', '-__v -estado')
+        .populate('lote', '-__v -estado')
+
         if (!existeReserva) {
             const error = new Error('Reserva no existe')
             return res.status(404).json({
@@ -90,36 +93,64 @@ const crearPago = async ( req, res = response ) => {
             })
         }
 
-        const metodosValidos =  ['Efectivo', 'Transferencia', 'Debito', 'Credito']
+        // const metodosValidos =  ['Efectivo', 'Transferencia', 'Debito', 'Credito']
 
-        if ( !metodosValidos.includes(metodoPago) ) {
-            const error = new Error('Metodo de Pago no Valido')
+        // if ( !metodosValidos.includes(metodoPago) ) {
+        //     const error = new Error('Metodo de Pago no Valido')
+        //     return res.status(400).json({
+        //         msg: error.message
+        //     })
+        // }
+
+        const codicionesValidas = ['Finalizada', 'Anulada']
+        if ( !codicionesValidas.includes(existeReserva.condicion) ) {
+            const error = new Error(`No puede Pagarse una Reserva ${existeReserva.condicion}`)
             return res.status(400).json({
                 msg: error.message
             })
         }
 
-        if ( existeReserva.condicion !== 'Finalizada' ) {
-            const error = new Error('Solo puede pagarse una reserva finalizada')
-            return res.status(400).json({
-                msg: error.message
-            })
-        }
+        // if ( existeReserva.condicion !== 'Finalizada' ) {
+        //     const error = new Error('Solo puede pagarse una reserva finalizada')
+        //     return res.status(400).json({
+        //         msg: error.message
+        //     })
+        // }
+
+
+        
+        // Validar Correcion mal cambio de estado
+        // if ( condicion === 'Pagada' && existeReserva.condicion === 'Anulada' ) {
+        //     existeReserva.condicion = condicion;
+        //     await existeReserva.save()
+        //     return res.json(existeReserva);
+        // }
+
 
         const { estado, ...data } = req.body;
         data.numero = generarNumeroUnico(6);
         const total = calcularPrecio(
             existeReserva.entrada, existeReserva.salida, existeReserva.tarifa.precioBase,
             existeReserva.tarifa.precioMinuto, existeReserva.tarifa.desdeMinuto
-        )
-        data.total = total;
+        );
+        // TODO: Hacerlo en la base de datos
+        if ( total <= 0 ) {
+            const error = new Error(`Total Debe ser Mayor a 0`)
+            return res.status(400).json({
+                msg: error.message
+            })
+        }
+        data.total = total
         const pago = new Pago(data);
         await pago.save()
 
         existeReserva.condicion = 'Pagada';
         await existeReserva.save()
-
-        res.status(201).json(pago);
+        
+        // if ( existeReserva.condicion === 'Anulada' ) {
+        //     return res.status(201).json(existeReserva);
+        // }
+        res.status(201).json(existeReserva);
 
     } catch (error) {
         console.log(error);
