@@ -1,4 +1,4 @@
-import { Tarifa, Reserva, Lote, Pago } from "../models/index.js";
+import { Tarifa, Reserva, Lote, Pago, Usuario } from "../models/index.js";
 
 const existeTarifaPorId = async ( id ) => {
     // Verificar si la categoria existe
@@ -36,9 +36,36 @@ const existePagoPorId = async ( id ) => {
     }
 }
 
+const existeUsuarioPorId = async ( id ) => {
+    // Verificar si el Usuario existe
+    const existeUsuario = await Usuario.findById(id);
+    if ( !existeUsuario ) {
+        const error = new Error(`El id ${id} no existe`)
+        throw error
+    }
+}
+
+const emailOcupado = async ( email = '' ) => {
+    // Verificar si el email existe
+    const existeEmail = await Usuario.findOne({ email })
+    if ( existeEmail ) {
+        const error = new Error(`El correo ${email} ya esta registrado en la BD`)
+        throw error
+    }
+}
+
+// const esRoleValido = async (rol = '') => {
+//     const existeRol = await Role.findOne({ rol });
+//     if ( !existeRol ) {
+//         throw new Error(`EL rol ${rol} no esta registrado en la BD`)
+//     }
+// }
+
 export {
     existeTarifaPorId,
     existeReservaPorId,
     existeLotePorId,
-    existePagoPorId
+    existePagoPorId,
+    existeUsuarioPorId,
+    emailOcupado
 }

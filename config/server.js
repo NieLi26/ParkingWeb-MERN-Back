@@ -1,6 +1,12 @@
 import express from 'express';
 import cors from 'cors';
-import { loteRoutes, pagoRoutes, reservaRoutes, tarifaRoutes } from '../routes/index.js'
+import { 
+    loteRoutes, 
+    pagoRoutes, 
+    reservaRoutes, 
+    tarifaRoutes,
+    usuarioRoutes
+} from '../routes/index.js'
 import dbConnection from './db.js';
 
 class Server {
@@ -12,6 +18,7 @@ class Server {
             tarifas: '/api/tarifas',
             reservas: '/api/reservas',
             pagos: '/api/pagos',
+            usuarios: '/api/usuarios',
         }
 
         this.conectarDB();
@@ -37,6 +44,7 @@ class Server {
                 }
             }
         }
+        // this.app.use( cors() );
         this.app.use( cors(corsOptions) );
         // Lectura y parseo del body
         this.app.use( express.json() );
@@ -49,6 +57,7 @@ class Server {
         this.app.use(this.paths.tarifas, tarifaRoutes)
         this.app.use(this.paths.reservas, reservaRoutes)
         this.app.use(this.paths.pagos, pagoRoutes)
+        this.app.use(this.paths.usuarios, usuarioRoutes)
     }
 
     listen () {

@@ -305,6 +305,8 @@ const cambiarCondicion = async ( req, res = response ) => {
 
         existeReserva.observacion = observacion || existeReserva.observacion;
         existeReserva.salida = Date.now();
+        // existeReserva.salida = new Date()
+        // existeReserva.salida = new Date().toLocaleString("es-CL", {timeZone: "America/Santiago"});
         existeReserva.condicion = condicion;
         await existeReserva.save();
         // Liberar Lote

@@ -23,7 +23,7 @@ const reservaSchema = mongoose.Schema({
     },
     entrada: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
         require: true
     },
     salida: {

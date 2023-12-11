@@ -10,18 +10,22 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeLotePorId } from "../helpers/index.js";
+import { validarJWT } from "../middlewares/index.js"
 
 const router = Router();
 
-router.get('/', obtenerLotes)
+router.get('/', validarJWT, obtenerLotes)
 router.get('/:id',[
+    validarJWT,
     check('id', 'No es un id valido').isMongoId(),
+    validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeLotePorId ),
     validarCampos
 ], obtenerLote)
 
 router.post('/', [
+    validarJWT,
     check('numero', 'El Numero es obligatorio').not().isEmpty(),
     validarCampos,
     check('numero', 'El un numero debe ser un entero, y mayor a 0').isInt({ gt: 0 }),
@@ -29,9 +33,12 @@ router.post('/', [
 ], crearLote)
 
 router.put('/:id',[
+    validarJWT,
     check('id', 'No es un id valido').isMongoId(),
+    validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeLotePorId ),
+    validarCampos,
     check('numero', 'El Numero es obligatorio').not().isEmpty(),
     validarCampos,
     check('numero', 'El un numero debe ser un entero, y mayor a 0').isInt({ gt: 0 }),
@@ -39,14 +46,18 @@ router.put('/:id',[
 ], actualizarLote)
 
 router.delete('/:id',[
+    validarJWT,
     check('id', 'No es un id valido').isMongoId(),
+    validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeLotePorId ),
     validarCampos
 ], eliminarLote)
 
 router.get('/:id/reserva',[
+    validarJWT,
     check('id', 'No es un id valido').isMongoId(),
+    validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeLotePorId ),
     validarCampos
