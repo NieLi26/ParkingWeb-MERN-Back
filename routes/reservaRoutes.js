@@ -11,7 +11,7 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeReservaPorId } from "../helpers/index.js";
-import { validarJWT } from "../middlewares/index.js"
+import { validarJWT, tieneRole } from "../middlewares/index.js"
 
 const router = Router();
 
@@ -46,6 +46,7 @@ router.put('/condicion/:id', [
 ], cambiarCondicion)
 router.delete('/:id', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador

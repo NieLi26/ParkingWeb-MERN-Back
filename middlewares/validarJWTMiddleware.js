@@ -40,7 +40,7 @@ const validarJWT = async ( req = request, res = response, next ) => {
     }
     
     if ( !token ) {
-        const error = new Error('No Hay Token en la Peticion');
+        const error = new Error('No Hay Token en la Peticion jwt');
         return res.status(401).json({ msg: error.message })
     }
 

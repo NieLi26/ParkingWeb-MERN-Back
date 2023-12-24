@@ -22,7 +22,7 @@ const obtenerReservas = async ( req, res = response ) => {
             const endIndex = Math.min(startIndex + pageSize - 1, totalResults - 1);
         
             const reservas = await Reserva.find(query)
-                .sort('patente')
+                .sort('-createdAt')
                 .skip(startIndex)
                 .limit(parseInt(pageSize))
                 .populate([
@@ -289,19 +289,43 @@ const cambiarCondicion = async ( req, res = response ) => {
             })
         }
 
-        if ( condicion === 'Anulada'  && existeReserva.condicion !== 'Finalizada' ) {
-            const error = new Error('La reserva debe estar Finalizada')
-            return res.status(400).json({
-                msg: error.message
-            })
+        if ( condicion === 'Anulada' ) {
+            const rolesValidos = ['ADMIN_ROLE', 'SUPER_ROLE']
+            if ( !rolesValidos.includes(req.usuario.rol) ) {
+                const error = new Error(`${req.usuario.nombre} no es administrador - No puede hacer esto`)
+                return res.status(403).json({
+                    msg: error.message
+                })
+            }
+
+            if ( existeReserva.condicion !== 'Finalizada' ) {
+                const error = new Error('La reserva debe estar Finalizada')
+                return res.status(400).json({
+                    msg: error.message
+                })
+            }
+
+            if ( !observacion ) {
+                const error = new Error('Debe Ingresar Observacion')
+                return res.status(400).json({
+                    msg: error.message
+                })
+            }
         }
 
-        if ( condicion === 'Anulada' && !observacion ) {
-            const error = new Error('Debe Ingresar Observacion')
-            return res.status(400).json({
-                msg: error.message
-            })
-        }
+        // if ( condicion === 'Anulada' && existeReserva.condicion !== 'Finalizada' ) {
+        //     const error = new Error('La reserva debe estar Finalizada')
+        //     return res.status(400).json({
+        //         msg: error.message
+        //     })
+        // }
+
+        // if ( condicion === 'Anulada' && !observacion ) {
+        //     const error = new Error('Debe Ingresar Observacion')
+        //     return res.status(400).json({
+        //         msg: error.message
+        //     })
+        // }
 
         existeReserva.observacion = observacion || existeReserva.observacion;
         existeReserva.salida = Date.now();

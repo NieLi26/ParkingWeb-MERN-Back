@@ -26,7 +26,8 @@ const obtenerPagos = async ( req = request, res = response ) => {
                 .sort('numero')
                 .skip(startIndex)
                 .limit(parseInt(pageSize))
-                .populate({ path: 'reserva', select: 'patente'})
+                .populate({ path: 'reserva', populate: [{ path: 'lote' }, { path: 'tarifa' }]})
+        
         
         
             const paginationInfo = {
@@ -108,6 +109,16 @@ const crearPago = async ( req, res = response ) => {
             return res.status(400).json({
                 msg: error.message
             })
+        }
+
+        if ( existeReserva.condicion === 'Anulada' ) {
+            const rolesValidos = ['ADMIN_ROLE', 'SUPER_ROLE']
+            if ( !rolesValidos.includes(req.usuario.rol) ) {
+                const error = new Error(`${req.usuario.nombre} no es administrador - No puede hacer esto`)
+                return res.status(403).json({
+                    msg: error.message
+                })
+            }
         }
 
         // if ( existeReserva.condicion !== 'Finalizada' ) {

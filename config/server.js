@@ -5,7 +5,8 @@ import {
     pagoRoutes, 
     reservaRoutes, 
     tarifaRoutes,
-    usuarioRoutes
+    usuarioRoutes,
+    authRoutes
 } from '../routes/index.js'
 import dbConnection from './db.js';
 
@@ -19,6 +20,7 @@ class Server {
             reservas: '/api/reservas',
             pagos: '/api/pagos',
             usuarios: '/api/usuarios',
+            auth: '/api/auth',
         }
 
         this.conectarDB();
@@ -58,6 +60,7 @@ class Server {
         this.app.use(this.paths.reservas, reservaRoutes)
         this.app.use(this.paths.pagos, pagoRoutes)
         this.app.use(this.paths.usuarios, usuarioRoutes)
+        this.app.use(this.paths.auth, authRoutes)
     }
 
     listen () {

@@ -21,7 +21,7 @@ const obtenerTarifas = async ( req, res = response ) => {
             const endIndex = Math.min(startIndex + pageSize - 1, totalResults - 1);
         
             const tarifas = await Tarifa.find(query)
-                .sort('nombre')
+                .sort('-createdAt')
                 .skip(startIndex)
                 .limit(parseInt(pageSize));
         
@@ -167,9 +167,16 @@ const actualizarTarifa = async ( req, res = response ) => {
 }
 
 const eliminarTarifa = async ( req, res = response ) => {
+    const { password = '' } = req.body;
     const { id } = req.params;
 
     try {
+        const validPassword = await req.usuario.comprobarPassword( password );
+        if ( !validPassword  ) {
+            const error = new Error('Credenciales incorrectas')
+            return res.status(403).json({msg: error.message});
+        }
+
         const existeTarifa = await Tarifa.findById( id );
         if (!existeTarifa) {
             const error = new Error('Tarifa no existe')

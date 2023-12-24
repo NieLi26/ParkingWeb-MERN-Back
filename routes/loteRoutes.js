@@ -10,7 +10,7 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeLotePorId } from "../helpers/index.js";
-import { validarJWT } from "../middlewares/index.js"
+import { validarJWT, tieneRole } from "../middlewares/index.js"
 
 const router = Router();
 
@@ -26,6 +26,7 @@ router.get('/:id',[
 
 router.post('/', [
     validarJWT,
+    tieneRole('SUPER_ROLE'),
     check('numero', 'El Numero es obligatorio').not().isEmpty(),
     validarCampos,
     check('numero', 'El un numero debe ser un entero, y mayor a 0').isInt({ gt: 0 }),
@@ -34,6 +35,7 @@ router.post('/', [
 
 router.put('/:id',[
     validarJWT,
+    tieneRole('SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -47,6 +49,7 @@ router.put('/:id',[
 
 router.delete('/:id',[
     validarJWT,
+    tieneRole('SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador

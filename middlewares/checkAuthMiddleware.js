@@ -39,7 +39,7 @@ const checkAuth = async (req, res, next) => {
     }
     
     if ( !token ) {
-        const error = new Error('No Hay Token en la Peticion');
+        const error = new Error('No Hay Token en la Peticion en cehckauth');
         return res.status(401).json({ msg: error.message })
     }
 

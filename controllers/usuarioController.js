@@ -3,7 +3,7 @@ import { generarJWT } from "../helpers/index.js";
 
 const obtenerUsuarios = async ( req, res = response ) => {
     const { page, pageSize = 5 } = req.query;
-    const query = { estado: true };
+    const query = { estado: true, rol: { $ne: 'SUPER_ROLE' } };
     try {
         if ( page ) {
             const totalResults = await Usuario.countDocuments(query);
@@ -20,7 +20,7 @@ const obtenerUsuarios = async ( req, res = response ) => {
             const endIndex = Math.min(startIndex + pageSize - 1, totalResults - 1);
         
             const usuarios = await Usuario.find(query)
-                .sort('nombre')
+                .sort('-createdAt')
                 .skip(startIndex)
                 .limit(parseInt(pageSize));
         
@@ -114,6 +114,13 @@ const actualizarUsuario = async ( req, res = response ) => {
             })
         }
 
+        if ( existeUsuario.rol === 'SUPER_ROLE' ) {
+            const error = new Error(`${req.usuario.nombre} - No puede hacer esto`)
+            return res.status(403).json({
+                msg: error.message
+            })
+        }
+
         // Comprobar existencia de usuario por correo
         const  existeCorreo = await Usuario.findOne({email: resto.email.toLowerCase()});
 
@@ -137,15 +144,39 @@ const actualizarUsuario = async ( req, res = response ) => {
 }
 
 const eliminarUsuario = async ( req, res = response ) => {
+    const { password = '' } = req.body;
     const { id } = req.params;
 
     try {
+        const validPassword = await req.usuario.comprobarPassword( password );
+        if ( !validPassword  ) {
+            const error = new Error('Credenciales incorrectas')
+            return res.status(403).json({msg: error.message});
+        }
+
         const existeUsuario = await Usuario.findById( id );
         if (!existeUsuario) {
             const error = new Error('Usuario no existe')
             return res.status(404).json({
                 msg: error.message
             })
+        }
+
+        if ( existeUsuario.rol === 'SUPER_ROLE' ) {
+            const error = new Error(`${req.usuario.nombre} - No puede hacer esto`)
+            return res.status(403).json({
+                msg: error.message
+            })
+        }
+
+        
+        if ( existeUsuario.rol === 'ADMIN_ROLE' ) {
+            if ( req.usuario.rol !== 'SUPER_ROLE' ) {
+                const error = new Error(`${req.usuario.nombre} - No puede hacer esto`)
+                return res.status(403).json({
+                    msg: error.message
+                })
+            }
         }
 
         const usuario = await Usuario.findByIdAndUpdate( id, { estado: false }, { new: true } );

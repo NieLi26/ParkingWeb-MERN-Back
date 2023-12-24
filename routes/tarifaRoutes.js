@@ -9,13 +9,16 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeTarifaPorId } from "../helpers/index.js";
-import { validarJWT } from "../middlewares/index.js"
+import { validarJWT, tieneRole } from "../middlewares/index.js"
 
 const router = Router();
 
-router.get('/', validarJWT, obtenerTarifas)
+router.get('/', [
+    validarJWT
+], obtenerTarifas)
 router.get('/:id', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -24,6 +27,7 @@ router.get('/:id', [
 ], obtenerTarifa)
 router.post('/', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('nombre', 'El Nombre es obligatorio').not().isEmpty(),
     check('precioBase', 'El Precio Base es obligatorio').not().isEmpty(),
     check('precioMinuto', 'El Precio por Minuto es obligatorio').not().isEmpty(),
@@ -32,6 +36,7 @@ router.post('/', [
 ], crearTarifa)
 router.put('/:id', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -43,12 +48,15 @@ router.put('/:id', [
     check('desdeMinuto', 'El Desde que Minuto es obligatorio').not().isEmpty(),
     validarCampos
 ], actualizarTarifa)
-router.delete('/:id', [
+router.post('/:id', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeTarifaPorId ),
+    validarCampos,
+    check('password', 'La Contraseña es Obligatoria').not().isEmpty(),
     validarCampos
 ], eliminarTarifa)
 

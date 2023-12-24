@@ -11,14 +11,18 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existeUsuarioPorId, emailOcupado } from "../helpers/index.js";
-import { validarJWT } from "../middlewares/index.js"
+import { validarJWT, tieneRole } from "../middlewares/index.js"
 
 const router = Router();
 
-router.get('/', validarJWT, obtenerUsuarios);
+router.get('/', [
+    validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
+], obtenerUsuarios);
 
 router.get('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -28,6 +32,7 @@ router.get('/:id',[
 
 router.post('/', [
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('email', 'El Correo es Obligatorio').not().isEmpty(),
     check('password', 'El Password debe ser de mas de 6 letras').isLength({min: 6}),
     check('nombre', 'El Nombre es Obligatorio').not().isEmpty(),
@@ -42,6 +47,7 @@ router.post('/', [
 
 router.put('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -56,22 +62,25 @@ router.put('/:id',[
     validarCampos,
 ], actualizarUsuario)
 
-router.delete('/:id',[
+router.post('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
     check('id').custom( existeUsuarioPorId ),
+    validarCampos,
+    check('password', 'La Contraseña es Obligatoria').not().isEmpty(),
     validarCampos
 ], eliminarUsuario)
 
-router.post('/login', [
-    check('email', 'El Correo es Obligatorio').not().isEmpty(),
-    check('password', 'El Password es Obligatorio').not().isEmpty(),
-    validarCampos,
-], login);
+// router.post('/login', [
+//     check('email', 'El Correo es Obligatorio').not().isEmpty(),
+//     check('password', 'El Password es Obligatorio').not().isEmpty(),
+//     validarCampos,
+// ], login);
 
-router.get('/perfil/token', validarJWT, perfil);
+// router.get('/perfil/token', validarJWT, perfil);
 
 // router.get('/:id/reserva',[
 //     check('id', 'No es un id valido').isMongoId(),

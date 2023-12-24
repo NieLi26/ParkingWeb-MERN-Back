@@ -9,13 +9,17 @@ import {
 } from "../controllers/index.js";
 import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
 import { existePagoPorId } from "../helpers/index.js";
-import { validarJWT } from "../middlewares/index.js"
+import { validarJWT, tieneRole } from "../middlewares/index.js"
 
 const router = Router();
 
-router.get('/', validarJWT, obtenerPagos)
+router.get('/', [
+    validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
+], obtenerPagos)
 router.get('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -30,6 +34,7 @@ router.post('/',[
 ], crearPago)
 router.put('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
@@ -45,6 +50,7 @@ router.put('/:id',[
 ],actualizarPago)
 router.delete('/:id',[
     validarJWT,
+    tieneRole('ADMIN_ROLE', 'SUPER_ROLE'),
     check('id', 'No es un id valido').isMongoId(),
     validarCampos,
     // TODO: Sacar la comprobacion del controlador
