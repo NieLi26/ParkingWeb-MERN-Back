@@ -14,7 +14,7 @@ class Server {
     constructor () {
         this.app = express();
         this.port = process.env.PORT || 8080;
-        this.paths = {
+        this.paths = { 
             lotes: '/api/lotes',
             tarifas: '/api/tarifas',
             reservas: '/api/reservas',
@@ -46,8 +46,8 @@ class Server {
                 }
             }
         }
-        // this.app.use( cors() );
-        this.app.use( cors(corsOptions) );
+        this.app.use( cors() );
+        // this.app.use( cors(corsOptions) );
         // Lectura y parseo del body
         this.app.use( express.json() );
         // DIR Publico
