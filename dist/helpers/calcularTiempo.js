@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const calcularTiempo = (entrada, salida) => {
-    const diferenciaEnMilisegundos = salida - entrada;
+    const diferenciaEnMilisegundos = Number(salida) - Number(entrada);
     // Puedes convertir la diferencia a segundos, minutos, horas, etc., según tus necesidades
     // Calcula días, horas y minutos
     const dias = Math.floor(diferenciaEnMilisegundos / (1000 * 60 * 60 * 24));

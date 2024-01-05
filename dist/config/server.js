@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const index_1 = require("../routes/index");
 const db_1 = __importDefault(require("./db"));
 class Server {
     constructor() {
@@ -27,6 +28,9 @@ class Server {
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '8080';
+        this.conectarDB();
+        this.middlewares();
+        this.routes();
     }
     conectarDB() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -35,30 +39,31 @@ class Server {
     }
     middlewares() {
         // CORS
-        // const whitelist = [process.env.FRONTEND_URL]
-        // const corsOptions = {
-        //     origin: function (origin: any , callback: Function) {
-        //         if (whitelist.indexOf(origin) !== -1) {
-        //             callback(null, true)
-        //         } else {
-        //             callback(new Error('Not allowed by CORS'))
-        //         }
-        //     }
-        // }
-        this.app.use((0, cors_1.default)());
-        // this.app.use( cors(corsOptions) );
+        const whitelist = [process.env.FRONTEND_URL];
+        const corsOptions = {
+            origin: function (origin, callback) {
+                if (whitelist.indexOf(origin) !== -1) {
+                    callback(null, true);
+                }
+                else {
+                    callback(new Error('Not allowed by CORS'));
+                }
+            }
+        };
+        // this.app.use( cors() );
+        this.app.use((0, cors_1.default)(corsOptions));
         // Lectura y parseo del body
         this.app.use(express_1.default.json());
         // DIR Publico
         this.app.use(express_1.default.static('public'));
     }
     routes() {
-        this.app.use(this.paths.lotes, loteRoutes);
-        this.app.use(this.paths.tarifas, tarifaRoutes);
-        this.app.use(this.paths.reservas, reservaRoutes);
-        this.app.use(this.paths.pagos, pagoRoutes);
-        this.app.use(this.paths.usuarios, usuarioRoutes);
-        this.app.use(this.paths.auth, authRoutes);
+        this.app.use(this.paths.lotes, index_1.loteRoutes);
+        this.app.use(this.paths.tarifas, index_1.tarifaRoutes);
+        this.app.use(this.paths.reservas, index_1.reservaRoutes);
+        this.app.use(this.paths.pagos, index_1.pagoRoutes);
+        this.app.use(this.paths.usuarios, index_1.usuarioRoutes);
+        this.app.use(this.paths.auth, index_1.authRoutes);
     }
     listen() {
         this.app.listen(this.port, () => {

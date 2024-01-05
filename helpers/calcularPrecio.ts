@@ -1,6 +1,6 @@
 
-const calcularPrecio = ( entrada: number = Date.now(), salida: number = Date.now(), precioBase: number = 0, precioMinuto: number = 0, desdeMinuto: number = 0 ): number => {
-    const diferenciaEnMilisegundos = salida - entrada;
+const calcularPrecio = ( entrada: Date, salida: Date = new Date(), precioBase: number = 0, precioMinuto: number = 0, desdeMinuto: number = 0 ): number => {
+    const diferenciaEnMilisegundos = Number(salida) - Number(entrada);
 
     // Puedes convertir la diferencia a segundos, minutos, horas, etc., según tus necesidades
     const diferenciaEnSegundos = diferenciaEnMilisegundos / 1000;

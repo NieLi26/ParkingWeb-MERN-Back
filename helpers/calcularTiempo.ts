@@ -5,8 +5,8 @@ interface CalcularTiempo {
 }
 
 
-const calcularTiempo = (entrada: number, salida: number): CalcularTiempo => {
-    const diferenciaEnMilisegundos = salida - entrada;
+const calcularTiempo = ( entrada: Date, salida: Date ): CalcularTiempo => {
+    const diferenciaEnMilisegundos = Number(salida) - Number(entrada);
     
     // Puedes convertir la diferencia a segundos, minutos, horas, etc., según tus necesidades
 

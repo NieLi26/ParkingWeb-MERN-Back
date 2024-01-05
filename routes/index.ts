@@ -1,0 +1,6 @@
+export { default as tarifaRoutes } from './tarifaRoutes'
+export { default as loteRoutes } from './loteRoutes'
+export { default as reservaRoutes } from './reservaRoutes'
+export { default as pagoRoutes } from './pagoRoutes.js'
+export { default as usuarioRoutes } from './usuarioRoutes'
+export { default as authRoutes } from './authRoutes'

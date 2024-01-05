@@ -1,5 +1,13 @@
 import express, { Application } from 'express';
 import cors from 'cors';
+import { 
+    loteRoutes, 
+    pagoRoutes, 
+    reservaRoutes, 
+    tarifaRoutes,
+    usuarioRoutes,
+    authRoutes
+} from '../routes/index'
 import dbConnection from './db';
 
 interface Paths {
@@ -27,6 +35,12 @@ class Server {
     constructor () {
         this.app = express();
         this.port = process.env.PORT || '8080';
+        
+        this.conectarDB();
+
+        this.middlewares();
+
+        this.routes();
     }
 
     async conectarDB () {
@@ -35,18 +49,18 @@ class Server {
 
     middlewares () {
         // CORS
-        // const whitelist = [process.env.FRONTEND_URL]
-        // const corsOptions = {
-        //     origin: function (origin: any , callback: Function) {
-        //         if (whitelist.indexOf(origin) !== -1) {
-        //             callback(null, true)
-        //         } else {
-        //             callback(new Error('Not allowed by CORS'))
-        //         }
-        //     }
-        // }
-        this.app.use( cors() );
-        // this.app.use( cors(corsOptions) );
+        const whitelist = [process.env.FRONTEND_URL]
+        const corsOptions = {
+            origin: function (origin: any , callback: Function) {
+                if (whitelist.indexOf(origin) !== -1) {
+                    callback(null, true)
+                } else {
+                    callback(new Error('Not allowed by CORS'))
+                }
+            }
+        }
+        // this.app.use( cors() );
+        this.app.use( cors(corsOptions) );
         // Lectura y parseo del body
         this.app.use( express.json() );
         // DIR Publico

@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.validarJWT = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const index_1 = require("../models/index");
-const checkAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const validarJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let token = '';
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
@@ -39,17 +40,17 @@ const checkAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         }
         catch (error) {
             console.log(error);
-            const err = new Error('Error Inesperado, intente nuevamente');
+            const err = new Error('Token Expirado');
             return res.status(500).json({
                 msg: err.message
             });
         }
     }
     if (!token) {
-        const error = new Error('No Hay Token en la Peticion en cehckauth');
+        const error = new Error('No Hay Token en la Peticion jwt');
         return res.status(401).json({ msg: error.message });
     }
     // next();
 });
-exports.default = checkAuth;
-//# sourceMappingURL=checkAuthMiddleware.js.map
+exports.validarJWT = validarJWT;
+//# sourceMappingURL=validarJWTMiddleware.js.map

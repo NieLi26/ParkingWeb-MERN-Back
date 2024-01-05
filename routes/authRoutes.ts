@@ -3,9 +3,9 @@ import { check } from "express-validator";
 import { 
     login,
     perfil
-} from "../controllers/index.js";
-import { validarCampos } from "../middlewares/validarCamposMiddleware.js";
-import { validarJWT, tieneRole } from "../middlewares/index.js"
+} from "../controllers/index";
+import { validarCampos } from "../middlewares/validarCamposMiddleware";
+import { validarJWT, tieneRole } from "../middlewares/index"
 
 const router = Router();
 

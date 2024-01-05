@@ -51,7 +51,7 @@ const usuarioSchema = new mongoose_1.default.Schema({
         type: String,
         required: true,
         default: 'OPERADOR_ROLE',
-        enum: ['ADMIN_ROLE', 'OPERADOR_ROLE']
+        enum: ['ADMIN_ROLE', 'OPERADOR_ROLE', 'SUPER_ROLE']
     }
 }, {
     timestamps: true,

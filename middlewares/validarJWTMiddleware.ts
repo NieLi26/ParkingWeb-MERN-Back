@@ -1,14 +1,10 @@
-import jwt, { JwtPayload  } from 'jsonwebtoken';
-import { Usuario } from '../models/index';
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { Usuario } from '../models/index';
 
-interface RequestUsuario extends Request {
-    usuario: Object;
-}
-
-const checkAuth = async (req: RequestUsuario, res: Response, next: Function) => {
+const validarJWT = async ( req: Request, res: Response, next: Function ) => {
     let token: string = '';
-
+    
     if ( req.headers.authorization && req.headers.authorization.startsWith('Bearer') ) {
         try {
             token = req.headers.authorization.split(' ')[1];
@@ -36,7 +32,7 @@ const checkAuth = async (req: RequestUsuario, res: Response, next: Function) => 
             next();
         } catch (error) {
             console.log(error);
-            const err = new Error('Error Inesperado, intente nuevamente')
+            const err = new Error('Token Expirado')
             return res.status(500).json({
                 msg: err.message
             }) 
@@ -44,11 +40,14 @@ const checkAuth = async (req: RequestUsuario, res: Response, next: Function) => 
     }
     
     if ( !token ) {
-        const error = new Error('No Hay Token en la Peticion en cehckauth');
+        const error = new Error('No Hay Token en la Peticion jwt');
         return res.status(401).json({ msg: error.message })
     }
 
     // next();
 }
 
-export default checkAuth
+
+export {
+    validarJWT
+}
